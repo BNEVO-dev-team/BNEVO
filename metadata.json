@@ -1,5 +1,7 @@
 {
-  "name": "BNEVO",
+  "name": "Copy of BNEVO - V2",
   "description": "The ultra-simple volunteer management SaaS. Ditch Excel, embrace community.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }

@@ -10,6 +10,7 @@ export interface User {
   email?: string; // Devient optionnel
   password?: string;
   interests?: string[];
+  organizationIds?: string[]; // IDs des organisations auxquelles l'utilisateur appartient
 }
 
 export interface ChatMessage {
@@ -21,17 +22,26 @@ export interface ChatMessage {
   timestamp: number;
 }
 
-export interface Mission {
+export interface MissionObjective {
   id: string;
   title: string;
+  lat: number;
+  lng: number;
+}
+
+export interface Mission {
+  id: string;
+  organizationId: string; // Lien vers l'organisation
+  title: string;
   location: string;
+  objectives?: MissionObjective[]; // Liste d'objectifs géolocalisés
   dateStart: string; // ISO Date string
   dateEnd: string;   // ISO Date string
   description: string;
   participants: string[]; // User IDs
   maxParticipants?: number;
   chatMessages: ChatMessage[];
-  category: 'Event' | 'Maintenance' | 'Admin' | 'Social';
+  category: 'Event' | 'Maintenance' | 'Admin' | 'Social' | 'Autre';
 }
 
 export interface Organization {
@@ -43,8 +53,9 @@ export interface Organization {
 export interface AppState {
   currentUser: User | null;
   currentRole: Role;
-  currentOrganization: Organization | null;
-  managedOrganization: Organization;
+  currentOrganization: Organization | null; // L'organisation actuellement visualisée/gérée
+  managedOrganization: Organization; // Legacy, peut être identique à currentOrganization
   missions: Mission[];
   users: User[]; // Mock database of users
+  organizations: Organization[]; // Liste de toutes les orgs disponibles (mock DB)
 }
