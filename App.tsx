@@ -760,8 +760,8 @@ export default function App() {
 
         <div className="max-w-md w-full text-center space-y-8 relative z-10">
           <div className="mx-auto animate-bounce-slow">
-            <img src="/images/LOGO_SOMBRE.png" alt="BNEVO Logo" className="h-20 md:h-28 w-auto mx-auto dark:hidden" referrerPolicy="no-referrer" />
-            <img src="/images/LOGO_CLAIR.png" alt="BNEVO Logo" className="h-20 md:h-28 w-auto mx-auto hidden dark:block" referrerPolicy="no-referrer" />
+            <img src="images/LOGO_SOMBRE.png" alt="BNEVO Logo" className="h-20 md:h-28 w-auto mx-auto dark:hidden" referrerPolicy="no-referrer" />
+            <img src="images/LOGO_CLAIR.png" alt="BNEVO Logo" className="h-20 md:h-28 w-auto mx-auto hidden dark:block" referrerPolicy="no-referrer" />
           </div>
           <div className="px-4">
             <p className="mt-4 text-base md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed font-bold">
