@@ -50,7 +50,7 @@ export const MiniAgenda: React.FC<MiniAgendaProps> = ({ selectedDate, onSelectDa
         {selectedDate && (
           <button 
             onClick={() => onSelectDate(null)}
-            className="text-[10px] font-black uppercase tracking-widest text-primary-600 bg-primary-50 dark:bg-primary-900/30 px-3 py-1 rounded-lg flex items-center gap-1.5 hover:scale-105 transition-transform"
+            className="text-[10px] font-black uppercase tracking-widest text-primary-600 bg-primary-100 px-3 py-1 rounded-lg flex items-center gap-1.5 hover:scale-105 transition-transform"
           >
             <RotateCcw className="w-3 h-3" /> Réinitialiser
           </button>
@@ -113,7 +113,7 @@ export const MiniAgenda: React.FC<MiniAgendaProps> = ({ selectedDate, onSelectDa
         
         {/* Masque visuel pour indiquer le scroll à droite */}
         {!selectedDate && (
-          <div className="absolute top-0 right-0 h-full w-12 bg-gradient-to-l from-white dark:from-slate-900 to-transparent pointer-events-none opacity-80 group-hover/agenda:opacity-0 transition-opacity" />
+          <div className="absolute top-0 right-0 h-full w-12 bg-gradient-to-l from-white dark:from-slate-950 to-transparent pointer-events-none opacity-80 group-hover/agenda:opacity-0 transition-opacity" />
         )}
       </div>
     </div>

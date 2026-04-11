@@ -45,11 +45,11 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ mission, currentUser, on
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
           {mission.chatMessages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-slate-400 text-center p-8">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                <Send className="w-6 h-6 text-slate-300" />
+              <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mb-4">
+                <Send className="w-6 h-6 text-primary-300" />
               </div>
               <p className="text-sm">Aucun message pour le moment.</p>
               <p className="text-xs">Posez une question à l'équipe !</p>

@@ -3,37 +3,43 @@ import { Mission, User, Organization } from './types';
 export const MOCK_ORG: Organization = {
   id: 'org-1',
   name: 'Le Chant du Coq Solidaire',
-  code: 'COQ-2025'
+  code: 'COQ-2025',
+  tier: 'Gratuit'
 };
 
 export const MOCK_ORG_2: Organization = {
   id: 'org-2',
   name: 'Les Amis de la Forêt',
-  code: 'NATURE-2025'
+  code: 'NATURE-2025',
+  tier: 'Découverte'
 };
 
 export const MOCK_ORG_3: Organization = {
   id: 'org-3',
   name: 'Les Restos du Cœur',
-  code: 'RESTO-2025'
+  code: 'RESTO-2025',
+  tier: 'Premium'
 };
 
 export const MOCK_ORG_4: Organization = {
   id: 'org-4',
   name: 'SPA - Refuge Local',
-  code: 'SPA-2025'
+  code: 'SPA-2025',
+  tier: 'Gratuit'
 };
 
 export const MOCK_ORG_5: Organization = {
   id: 'org-5',
   name: 'Emmaüs - Collecte Mobile',
-  code: 'EMMA-2025'
+  code: 'EMMA-2025',
+  tier: 'Gratuit'
 };
 
 export const MOCK_ORG_6: Organization = {
   id: 'org-6',
   name: 'Secours Populaire',
-  code: 'SECOURS-2025'
+  code: 'SECOURS-2025',
+  tier: 'Gratuit'
 };
 
 export const MOCK_USERS: User[] = [

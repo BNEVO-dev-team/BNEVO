@@ -44,10 +44,13 @@ export interface Mission {
   category: 'Event' | 'Maintenance' | 'Admin' | 'Social' | 'Autre';
 }
 
+export type OrganizationTier = 'Gratuit' | 'Découverte' | 'Premium';
+
 export interface Organization {
   id: string;
   name: string;
   code: string;
+  tier: OrganizationTier;
 }
 
 export interface AppState {

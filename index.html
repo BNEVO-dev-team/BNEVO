@@ -5,8 +5,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>BNEVO - Gestion de Bénévoles Simplifiée</title>
+    <link rel="icon" type="image/png" href="/images/ICONE.png" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Leaflet for OpenStreetMap -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -17,21 +18,28 @@
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Inter', 'sans-serif'],
+              sans: ['InterLocal', 'Inter', 'sans-serif'],
+              title: ['NunitoBold', 'Nunito', 'sans-serif'],
+              subtitle: ['NunitoRegular', 'Nunito', 'sans-serif'],
             },
             colors: {
               primary: {
-                50: '#ecfdf5',
-                100: '#d1fae5',
-                200: '#a7f3d0',
-                300: '#6ee7b7',
-                400: '#34d399',
-                500: '#10b981', // Emerald 500
+                50: '#CEFFE5',
+                100: '#A7F3D0',
+                200: '#6EE7B7',
+                300: '#34D399',
+                400: '#10B981',
+                500: '#079669',
                 600: '#059669',
                 700: '#047857',
-                800: '#065f46',
-                900: '#064e3b',
-              }
+                800: '#065F46',
+                900: '#064E3B',
+              },
+              slate: {
+                900: '#181818',
+                950: '#121212',
+              },
+              black: '#181818',
             }
           }
         }
@@ -39,8 +47,8 @@
     </script>
     <style>
       body {
-        font-family: 'Inter', sans-serif;
-        background-color: #F8FAFC;
+        font-family: 'InterLocal', 'Inter', sans-serif;
+        background-color: #FFFFFF;
         -webkit-font-smoothing: antialiased;
       }
       /* Custom scrollbar for chat */

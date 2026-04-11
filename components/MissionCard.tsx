@@ -50,7 +50,7 @@ export const MissionCard: React.FC<MissionCardProps> = ({
       case 'Social': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300';
       case 'Maintenance': return 'bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300';
       case 'Event': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300';
-      default: return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+      default: return 'bg-primary-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
     }
   };
 
@@ -64,7 +64,7 @@ export const MissionCard: React.FC<MissionCardProps> = ({
             {mission.category}
           </span>
           {organizationName && (
-            <span className="flex items-center gap-1 px-2 py-1 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-lg text-[9px] font-bold uppercase tracking-tight truncate border border-slate-100 dark:border-slate-700">
+            <span className="flex items-center gap-1 px-2 py-1 bg-primary-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-lg text-[9px] font-bold uppercase tracking-tight truncate border border-slate-100 dark:border-slate-700">
               <Building className="w-2.5 h-2.5" />
               {organizationName}
             </span>
@@ -77,7 +77,7 @@ export const MissionCard: React.FC<MissionCardProps> = ({
         )}
       </div>
 
-      <h3 className="text-xl font-black text-slate-900 dark:text-white mb-3 leading-tight flex-grow">{mission.title}</h3>
+      <h3 className="font-subtitle text-xl font-bold text-slate-900 dark:text-white mb-3 leading-tight flex-grow normal-case">{mission.title}</h3>
       
       <div className="space-y-2 mb-6">
         <div className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400 font-medium">
@@ -102,7 +102,7 @@ export const MissionCard: React.FC<MissionCardProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl mb-5">
+      <div className="flex items-center justify-between p-3 bg-primary-50 dark:bg-slate-800/50 rounded-2xl mb-5">
         <div className="flex -space-x-2">
             {participants.slice(0, 3).map((p) => (
                 <img key={p.id} src={p.avatar} alt={p.firstName} className="w-8 h-8 rounded-xl border-2 border-white dark:border-slate-800 object-cover" />
@@ -130,7 +130,7 @@ export const MissionCard: React.FC<MissionCardProps> = ({
         </div>
         <button 
           onClick={() => onChat(mission.id)}
-          className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-primary-600 rounded-xl transition-all active:scale-90"
+          className="p-3 bg-primary-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-primary-600 rounded-xl transition-all active:scale-90"
         >
           <MessageCircle className="w-6 h-6" />
         </button>
