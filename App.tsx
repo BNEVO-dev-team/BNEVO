@@ -20,7 +20,7 @@ import { AppState, Mission, Role, User, Organization, MissionObjective, Organiza
 import logoSombre from './public/images/LOGO_SOMBRE.png';
 import logoClair from './public/images/LOGO_CLAIR.png';
 import icone from './public/images/ICONE.png';
-import mascotte from './public/images/MASCOTTE.png';
+
 
 // --- MAIN APP COMPONENT ---
 
@@ -1050,7 +1050,7 @@ export default function App() {
             </div>
 
             <div className="flex justify-center mt-12">
-              <img src={mascotte} alt="Mascot" className="h-24 w-auto animate-bounce-slow" referrerPolicy="no-referrer" />
+              <img src="/images/MASCOTTE.png" alt="Mascot" className="h-24 w-auto animate-bounce-slow" referrerPolicy="no-referrer" />
             </div>
           </div>
         ) : state.currentRole === 'organizer' ? (
