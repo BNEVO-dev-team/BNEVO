@@ -42,7 +42,7 @@ export const MascotAssistant: React.FC<MascotAssistantProps> = ({ role }) => {
             <div className="p-5 space-y-4">
               <div className="flex gap-3">
                 <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center overflow-hidden">
-                  <img src="/images/MASCOTTE.png" alt="Mascot" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                  <img src={mascotte} alt="Mascot" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                 </div>
                 <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-2xl rounded-tl-none">
                   <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
@@ -102,7 +102,7 @@ export const MascotAssistant: React.FC<MascotAssistantProps> = ({ role }) => {
       >
         <div className="w-14 h-14 md:w-16 md:h-16 bg-white dark:bg-slate-900 rounded-[1.5rem] shadow-2xl border-2 border-primary-500 flex items-center justify-center overflow-hidden group-hover:border-primary-600 transition-colors">
           <img 
-            src="/images/MASCOTTE.png" 
+            src={mascotte}
             alt="Mascot Assistant" 
             className="w-10 h-10 md:w-12 md:h-12 object-contain"
             referrerPolicy="no-referrer"

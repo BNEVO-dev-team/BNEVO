@@ -20,6 +20,7 @@ import { AppState, Mission, Role, User, Organization, MissionObjective, Organiza
 import logoSombre from './public/images/LOGO_SOMBRE.png';
 import logoClair from './public/images/LOGO_CLAIR.png';
 import icone from './public/images/ICONE.png';
+import mascotte from './public/images/MASCOTTE.png';
 
 // --- MAIN APP COMPONENT ---
 
