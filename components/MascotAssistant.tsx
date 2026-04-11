@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { X, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Role } from '../types';
-import mascotte from './public/images/MASCOTTE.png';
+import mascotte from '../public/images/MASCOTTE.png';
 
 interface MascotAssistantProps {
   role: Role;
