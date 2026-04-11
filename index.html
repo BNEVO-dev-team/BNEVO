@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BNEVO - Gestion de Bénévoles Simplifiée</title>
+    <link rel="icon" type="image/png" href="/BNEVO/assets/ICONE-BDmRYrQO.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet for OpenStreetMap -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['InterLocal', 'Inter', 'sans-serif'],
+              title: ['NunitoBold', 'Nunito', 'sans-serif'],
+              subtitle: ['NunitoRegular', 'Nunito', 'sans-serif'],
+            },
+            colors: {
+              primary: {
+                50: '#CEFFE5',
+                100: '#A7F3D0',
+                200: '#6EE7B7',
+                300: '#34D399',
+                400: '#10B981',
+                500: '#079669',
+                600: '#059669',
+                700: '#047857',
+                800: '#065F46',
+                900: '#064E3B',
+              },
+              slate: {
+                900: '#181818',
+                950: '#121212',
+              },
+              black: '#181818',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'InterLocal', 'Inter', sans-serif;
+        background-color: #FFFFFF;
+        -webkit-font-smoothing: antialiased;
+      }
+      /* Custom scrollbar for chat */
+      .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+      }
+      .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+      }
+      /* Leaflet custom styles */
+      .leaflet-container {
+          border-radius: 1.5rem;
+          z-index: 10;
+      }
+    </style>
+
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.559.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.5.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/"
+  }
+}
+</script>
+  <script type="module" crossorigin src="/BNEVO/assets/index-DJCy2BRg.js"></script>
+  <link rel="stylesheet" crossorigin href="/BNEVO/assets/index-DTXwLpeI.css">
+</head>
+  <body>
+    <div id="root"></div>
+</body>
+</html>
