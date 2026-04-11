@@ -688,8 +688,8 @@ export default function App() {
            <img src="/images/ICONE.png" alt="BNEVO Icon" className="h-10 w-auto md:hidden" referrerPolicy="no-referrer" />
            
            {/* Desktop Logos */}
-           <img src="/images/LOGO_SOMBRE.png" alt="BNEVO Logo" className="h-10 w-auto hidden md:block dark:md:hidden" referrerPolicy="no-referrer" />
-           <img src="/images/LOGO_CLAIR.png" alt="BNEVO Logo" className="h-10 w-auto hidden dark:md:block" referrerPolicy="no-referrer" />
+           <img src="images/LOGO_SOMBRE.png" alt="BNEVO Logo" className="h-10 w-auto hidden md:block dark:md:hidden" referrerPolicy="no-referrer" />
+           <img src="images/LOGO_CLAIR.png" alt="BNEVO Logo" className="h-10 w-auto hidden dark:md:block" referrerPolicy="no-referrer" />
            
            {state.currentOrganization && (
              <div className="flex flex-col ml-2">
