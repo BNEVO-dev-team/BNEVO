@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { X, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Role } from '../types';
+import mascotte from './public/images/MASCOTTE.png';
 
 interface MascotAssistantProps {
   role: Role;
@@ -102,7 +103,7 @@ export const MascotAssistant: React.FC<MascotAssistantProps> = ({ role }) => {
       >
         <div className="w-14 h-14 md:w-16 md:h-16 bg-white dark:bg-slate-900 rounded-[1.5rem] shadow-2xl border-2 border-primary-500 flex items-center justify-center overflow-hidden group-hover:border-primary-600 transition-colors">
           <img 
-            src="/images/MASCOTTE.png" 
+            src={mascotte}
             alt="Mascot Assistant" 
             className="w-10 h-10 md:w-12 md:h-12 object-contain"
             referrerPolicy="no-referrer"
