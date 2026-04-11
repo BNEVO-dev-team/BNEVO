@@ -1050,7 +1050,7 @@ export default function App() {
             </div>
 
             <div className="flex justify-center mt-12">
-              <img src="/images/MASCOTTE.png" alt="Mascot" className="h-24 w-auto animate-bounce-slow" referrerPolicy="no-referrer" />
+              <img src={mascotte} alt="Mascot" className="h-24 w-auto animate-bounce-slow" referrerPolicy="no-referrer" />
             </div>
           </div>
         ) : state.currentRole === 'organizer' ? (
