@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'motion/react';
 import { 
   Users, Calendar as CalendarIcon, LogOut, Plus, 
   BarChart3, LayoutDashboard, Search, Settings, Pencil, X,
@@ -15,12 +16,51 @@ import { Button } from './components/ui/Button';
 import { Input } from './components/ui/Input';
 import { Modal } from './components/ui/Modal';
 import { MOCK_MISSIONS, MOCK_USERS, MOCK_ORG, MOCK_ORG_2, MOCK_ORG_3, MOCK_ORG_4, MOCK_ORG_5, MOCK_ORG_6 } from './constants';
-import { AppState, Mission, Role, User, Organization, MissionObjective, OrganizationTier } from './types';
+import { AppState, Mission, Role, User, Organization, MissionObjective, OrganizationTier, LateCancellationAlert } from './types';
 
-import logoSombre from './public/images/LOGO_SOMBRE.png';
-import logoClair from './public/images/LOGO_CLAIR.png';
-import icone from './public/images/ICONE.png';
-import mascotte from './public/images/MASCOTTE.png';
+// --- COMPONENTS ---
+
+const AlertSection = ({ alerts, organizationId, isVolunteer, currentUserId }: { alerts: LateCancellationAlert[], organizationId?: string, isVolunteer?: boolean, currentUserId?: string }) => {
+  const relevantAlerts = alerts.filter(a => {
+    // Ne pas afficher ses propres alertes
+    if (currentUserId && a.userId === currentUserId) return false;
+    
+    // Filtrer par organisation si spécifié
+    if (organizationId && a.organizationId !== organizationId) return false;
+    
+    return true;
+  });
+
+  if (relevantAlerts.length === 0) return null;
+
+  return (
+    <div className="space-y-3 mb-8">
+      {relevantAlerts.map(alert => (
+        <motion.div 
+          key={alert.id}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-50 dark:bg-red-900/20 border-2 border-red-100 dark:border-red-800 p-4 rounded-2xl flex items-center gap-4 shadow-sm"
+        >
+          <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-black uppercase tracking-widest text-red-600 mb-0.5">
+              {isVolunteer ? "Alerte désistement" : "Désistement de dernière minute"}
+            </p>
+            <p className="text-sm text-slate-700 dark:text-slate-300 font-medium truncate">
+              <span className="font-black">{alert.userName}</span> s'est retiré de <span className="font-bold italic">"{alert.missionTitle}"</span>
+            </p>
+          </div>
+          <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            {new Date(alert.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+};
 
 // --- MAIN APP COMPONENT ---
 
@@ -32,7 +72,8 @@ export default function App() {
     managedOrganization: MOCK_ORG,
     missions: MOCK_MISSIONS,
     users: MOCK_USERS,
-    organizations: [MOCK_ORG, MOCK_ORG_2, MOCK_ORG_3, MOCK_ORG_4, MOCK_ORG_5, MOCK_ORG_6]
+    organizations: [MOCK_ORG, MOCK_ORG_2, MOCK_ORG_3, MOCK_ORG_4, MOCK_ORG_5, MOCK_ORG_6],
+    alerts: []
   });
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'calendar' | 'missions' | 'organizations' | 'volunteers'>('dashboard');
@@ -52,6 +93,9 @@ export default function App() {
   
   const [isOrgCodeModalOpen, setIsOrgCodeModalOpen] = useState(false);
   const [joinCodeInput, setJoinCodeInput] = useState('');
+  const [newOrgName, setNewOrgName] = useState('');
+  const [newOrgAvatar, setNewOrgAvatar] = useState('');
+  const orgLogoInputRef = useRef<HTMLInputElement>(null);
   
   const [viewingParticipantsMissionId, setViewingParticipantsMissionId] = useState<string | null>(null);
   const [viewingMapMission, setViewingMapMission] = useState<Mission | null>(null);
@@ -59,6 +103,7 @@ export default function App() {
   const [pickingObjectiveId, setPickingObjectiveId] = useState<string | null>(null);
 
   const [calendarDate, setCalendarDate] = useState(new Date());
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   const [isPricingPageOpen, setIsPricingPageOpen] = useState(false);
 
@@ -462,6 +507,101 @@ export default function App() {
     setIsProfileModalOpen(false);
   };
 
+  const handleOrgLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewOrgAvatar(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUpdateOrgProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!state.currentOrganization || !newOrgName.trim()) return;
+    
+    const updatedOrg = { 
+      ...state.currentOrganization, 
+      name: newOrgName.trim(),
+      avatar: newOrgAvatar || state.currentOrganization.avatar
+    };
+    setState(prev => ({
+      ...prev,
+      currentOrganization: updatedOrg,
+      managedOrganization: updatedOrg,
+      organizations: prev.organizations.map(o => o.id === updatedOrg.id ? updatedOrg : o)
+    }));
+    setIsOrgNameModalOpen(false);
+  };
+
+  const triggerLateCancellationAlert = (mission: Mission, user: User) => {
+    const alert: LateCancellationAlert = {
+      id: Math.random().toString(36).substr(2, 9),
+      userId: user.id,
+      userName: `${user.firstName} ${user.lastName}`,
+      userAvatar: user.avatar,
+      missionId: mission.id,
+      missionTitle: mission.title,
+      organizationId: mission.organizationId,
+      timestamp: Date.now()
+    };
+    
+    setState(prev => ({
+      ...prev,
+      alerts: [alert, ...prev.alerts]
+    }));
+  };
+
+  const isLateCancellation = (dateStart: string) => {
+    const startTime = new Date(dateStart).getTime();
+    const now = Date.now();
+    const twelveHoursInMs = 12 * 60 * 60 * 1000;
+    return (startTime - now) < twelveHoursInMs && (startTime - now) > 0;
+  };
+
+  const handleImprevu = () => {
+    if (!state.currentUser) return;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const missionsToCancel = state.missions.filter(m => 
+      m.participants.includes(state.currentUser!.id) &&
+      new Date(m.dateStart) >= today &&
+      new Date(m.dateStart) < tomorrow
+    );
+
+    if (missionsToCancel.length === 0) {
+      alert("Vous n'avez aucune mission prévue pour aujourd'hui.");
+      return;
+    }
+
+    setConfirmDialog({
+      isOpen: true,
+      title: "Signaler un imprévu",
+      message: `Vous allez être désinscrit de vos ${missionsToCancel.length} mission(s) d'aujourd'hui. Cela enverra une alerte immédiate aux associations et aux autres bénévoles. Confirmer ?`,
+      variant: 'danger',
+      onConfirm: () => {
+        missionsToCancel.forEach(m => triggerLateCancellationAlert(m, state.currentUser!));
+        
+        setState(prev => ({
+          ...prev,
+          missions: prev.missions.map(m => {
+            if (missionsToCancel.find(mtc => mtc.id === m.id)) {
+              return { ...m, participants: m.participants.filter(id => id !== prev.currentUser!.id) };
+            }
+            return m;
+          })
+        }));
+        setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+      }
+    });
+  };
+
   const logout = () => {
     setState(prev => ({ ...prev, currentUser: null, currentRole: 'none' }));
     setActiveTab('dashboard');
@@ -472,6 +612,14 @@ export default function App() {
   const handleJoinOrganization = (orgId: string) => {
     const orgToJoin = state.organizations.find(o => o.id === orgId);
     if (!orgToJoin) return;
+
+    const currentVolunteers = state.users.filter(u => u.role === 'volunteer' && u.organizationIds?.includes(orgId)).length;
+    const limit = orgToJoin.tier === 'Premium' ? Infinity : orgToJoin.tier === 'Découverte' ? 10 : 5;
+
+    if (currentVolunteers >= limit) {
+      alert(`Désolé, cette association a atteint sa limite de bénévoles (${limit}) pour son offre actuelle.`);
+      return;
+    }
     
     const updatedUser = {
       ...state.currentUser!,
@@ -601,6 +749,9 @@ export default function App() {
           message: "Êtes-vous sûr de vouloir vous désister ? Votre absence pourrait compliquer l'organisation de cette mission. Si possible, prévenez l'organisateur via le chat.",
           variant: 'danger',
           onConfirm: () => {
+            if (isLateCancellation(mission.dateStart)) {
+              triggerLateCancellationAlert(mission, state.currentUser!);
+            }
             setState(prev => ({
               ...prev,
               missions: prev.missions.map(m => m.id === missionId ? { ...m, participants: m.participants.filter(id => id !== prev.currentUser!.id) } : m)
@@ -690,37 +841,42 @@ export default function App() {
       <div className="max-w-5xl mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
         <div className="flex items-center gap-3">
            {/* Mobile Icon */}
-           <img src={icone} alt="BNEVO Icon" className="h-10 w-auto md:hidden" referrerPolicy="no-referrer" />
+           <img src="images/ICONE.png" alt="BNEVO Icon" className="h-10 w-auto md:hidden" referrerPolicy="no-referrer" />
            
            {/* Desktop Logos */}
-           <img src={logoSombre} alt="BNEVO Logo" className="h-10 w-auto hidden md:block dark:md:hidden" referrerPolicy="no-referrer" />
-           <img src={logoClair} alt="BNEVO Logo" className="h-10 w-auto hidden dark:md:block" referrerPolicy="no-referrer" />
+           <img src="images/LOGO_SOMBRE.png" alt="BNEVO Logo" className="h-10 w-auto hidden md:block dark:md:hidden" referrerPolicy="no-referrer" />
+           <img src="images/LOGO_CLAIR.png" alt="BNEVO Logo" className="h-10 w-auto hidden dark:md:block" referrerPolicy="no-referrer" />
            
            {state.currentOrganization && (
-             <div className="flex flex-col ml-2">
-               <div className="flex items-center gap-1 text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-medium">
-                 <span className="truncate max-w-[100px] md:max-w-[200px]">{state.currentOrganization.name}</span>
+             <div className="flex items-center gap-2 ml-2">
+               {state.currentOrganization.avatar && (
+                 <img src={state.currentOrganization.avatar} alt={state.currentOrganization.name} className="w-8 h-8 rounded-lg object-cover border border-slate-200 dark:border-slate-700" />
+               )}
+               <div className="flex flex-col">
+                 <div className="flex items-center gap-1 text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-medium">
+                   <span className="truncate max-w-[100px] md:max-w-[200px]">{state.currentOrganization.name}</span>
+                   {state.currentRole === 'organizer' && (
+                     <button onClick={() => { setNewOrgName(state.currentOrganization?.name || ''); setNewOrgAvatar(state.currentOrganization?.avatar || ''); setIsOrgNameModalOpen(true); }} className="hover:text-primary-600"><Pencil className="w-2.5 h-2.5" /></button>
+                   )}
+                 </div>
                  {state.currentRole === 'organizer' && (
-                   <button onClick={() => setIsOrgNameModalOpen(true)} className="hover:text-primary-600"><Pencil className="w-2.5 h-2.5" /></button>
+                   <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-0.5">
+                     <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md w-fit ${
+                       state.currentOrganization.tier === 'Premium' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                       state.currentOrganization.tier === 'Découverte' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400' :
+                       'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                     }`}>
+                       Tier {state.currentOrganization.tier}
+                     </span>
+                     <button 
+                       onClick={() => setIsPricingPageOpen(true)}
+                       className="text-[10px] font-black text-primary-600 hover:text-primary-700 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-md transition-colors w-fit"
+                     >
+                       Gérer l'offre
+                     </button>
+                   </div>
                  )}
                </div>
-               {state.currentRole === 'organizer' && (
-                 <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-0.5">
-                   <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md w-fit ${
-                     state.currentOrganization.tier === 'Premium' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                     state.currentOrganization.tier === 'Découverte' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400' :
-                     'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                   }`}>
-                     Tier {state.currentOrganization.tier}
-                   </span>
-                   <button 
-                     onClick={() => setIsPricingPageOpen(true)}
-                     className="text-[10px] font-black text-primary-600 hover:text-primary-700 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-md transition-colors w-fit"
-                   >
-                     Gérer l'offre
-                   </button>
-                 </div>
-               )}
              </div>
            )}
         </div>
@@ -765,8 +921,8 @@ export default function App() {
 
         <div className="max-w-md w-full text-center space-y-8 relative z-10">
           <div className="mx-auto animate-bounce-slow">
-            <img src={logoSombre} alt="BNEVO Logo" className="h-20 md:h-28 w-auto mx-auto dark:hidden" referrerPolicy="no-referrer" />
-            <img src={logoClair} alt="BNEVO Logo" className="h-20 md:h-28 w-auto mx-auto hidden dark:block" referrerPolicy="no-referrer" />
+            <img src="images/LOGO_SOMBRE.png" alt="BNEVO Logo" className="h-20 md:h-28 w-auto mx-auto dark:hidden" referrerPolicy="no-referrer" />
+            <img src="images/LOGO_CLAIR.png" alt="BNEVO Logo" className="h-20 md:h-28 w-auto mx-auto hidden dark:block" referrerPolicy="no-referrer" />
           </div>
           <div className="px-4">
             <p className="mt-4 text-base md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed font-bold">
@@ -945,13 +1101,38 @@ export default function App() {
       )}
 
       <main className="max-w-5xl mx-auto px-4 py-6 md:py-10">
+        {state.currentRole === 'organizer' && !isPricingPageOpen && (
+          <AlertSection alerts={state.alerts} organizationId={state.currentOrganization?.id} currentUserId={state.currentUser?.id} />
+        )}
+        {state.currentRole === 'volunteer' && (
+          <AlertSection alerts={state.alerts} isVolunteer currentUserId={state.currentUser?.id} />
+        )}
+        
         {isPricingPageOpen ? (
           <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center gap-4">
-              <button onClick={() => setIsPricingPageOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
-                <ArrowLeft className="w-6 h-6" />
-              </button>
-              <h2 className="text-3xl font-black">Nos Offres</h2>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <button onClick={() => setIsPricingPageOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                  <ArrowLeft className="w-6 h-6" />
+                </button>
+                <h2 className="text-3xl font-black">Nos Offres</h2>
+              </div>
+              
+              <div className="flex items-center gap-4 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl self-center">
+                <button 
+                  onClick={() => setBillingCycle('monthly')}
+                  className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${billingCycle === 'monthly' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-600' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                  Mensuel
+                </button>
+                <button 
+                  onClick={() => setBillingCycle('yearly')}
+                  className={`flex items-center gap-2 px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${billingCycle === 'yearly' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-600' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                  <span>Annuel</span>
+                  <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-0.5 rounded-lg">-16%</span>
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -975,16 +1156,17 @@ export default function App() {
 
                 <div className="space-y-5 mb-12 flex-1">
                   {[
-                    { text: 'Planning Interactif', check: true },
-                    { text: 'Remplacement Automatisé', check: true },
-                    { text: 'Alerte E-mail & Push', check: true },
-                    { text: 'Max 10 contacts alertés', check: false },
+                    { text: 'Planning Interactif : Créez vos événements et missions facilement.', check: true },
+                    { text: 'Alerte Anti-Surprise : Notification dès qu\'un bénévole a un imprévu.', check: true },
+                    { text: 'Démarchage Auto Mail : Démarchage automatique lors d\'un désistement.', check: true },
+                    { text: 'Limite : Maximum 10 bénévoles contactés.', check: false },
+                    { text: 'Limite : Maximum 5 évènements par an.', check: false },
                   ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-4">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center ${item.check ? 'bg-emerald-500' : 'bg-slate-100 dark:bg-slate-700'}`}>
+                    <div key={i} className="flex items-start gap-4">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${item.check ? 'bg-emerald-500' : 'bg-slate-100 dark:bg-slate-700'}`}>
                         {item.check ? <Check className="w-4 h-4 text-white" /> : <AlertTriangle className="w-4 h-4 text-slate-400" />}
                       </div>
-                      <span className={`font-bold ${item.check ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`}>{item.text}</span>
+                      <span className={`font-bold text-sm ${item.check ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`}>{item.text}</span>
                     </div>
                   ))}
                 </div>
@@ -1012,9 +1194,14 @@ export default function App() {
 
                 <div className="mb-8">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-6xl font-black text-slate-900 dark:text-white">19,90€</span>
+                    <span className="text-6xl font-black text-slate-900 dark:text-white">
+                      {billingCycle === 'monthly' ? '19,90€' : '16,60€'}
+                    </span>
                     <span className="text-2xl font-bold text-slate-400 dark:text-white/60">/ mois</span>
                   </div>
+                  {billingCycle === 'yearly' && (
+                    <p className="text-xs font-bold text-emerald-500 mt-1">Facturé annuellement (199€/an)</p>
+                  )}
                 </div>
 
                 <p className="text-slate-500 dark:text-slate-400 font-medium mb-10 leading-relaxed">
@@ -1023,16 +1210,16 @@ export default function App() {
 
                 <div className="space-y-5 mb-12 flex-1">
                   {[
-                    { text: 'Offre découverte', check: true },
-                    { text: 'Canal SMS Inclus', check: true },
-                    { text: 'Force de Frappe Illimitée', check: true },
-                    { text: 'Statistiques & Dashboard', check: true },
+                    { text: 'Toutes les fonctions de l\'Offre Découverte', check: true },
+                    { text: 'Événements Illimités', check: true },
+                    { text: 'Démarchage Illimité Mail + SMS', check: true },
+                    { text: 'Dashboard & Statistiques : Tableau de bord complet de pilotage.', check: true },
                   ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-4">
-                      <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
+                    <div key={i} className="flex items-start gap-4">
+                      <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 mt-0.5">
                         <Check className="w-4 h-4 text-white" />
                       </div>
-                      <span className="font-bold text-slate-900 dark:text-white">{item.text}</span>
+                      <span className="font-bold text-sm text-slate-900 dark:text-white">{item.text}</span>
                     </div>
                   ))}
                 </div>
@@ -1050,7 +1237,7 @@ export default function App() {
             </div>
 
             <div className="flex justify-center mt-12">
-              <img src={mascotte} alt="Mascot" className="h-24 w-auto animate-bounce-slow" referrerPolicy="no-referrer" />
+              <img src="images/MASCOTTE.png" alt="Mascot" className="h-24 w-auto animate-bounce-slow" referrerPolicy="no-referrer" />
             </div>
           </div>
         ) : state.currentRole === 'organizer' ? (
@@ -1074,7 +1261,11 @@ export default function App() {
                 <section className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
                    {[
                      { label: 'Missions', val: state.missions.filter(m => m.organizationId === state.currentOrganization?.id).length, color: 'text-slate-900 dark:text-white' },
-                     { label: 'Bénévoles', val: state.users.filter(u => u.role === 'volunteer' && u.organizationIds?.includes(state.currentOrganization!.id)).length, color: 'text-slate-900 dark:text-white' },
+                     { 
+                       label: 'Bénévoles', 
+                       val: `${state.users.filter(u => u.role === 'volunteer' && u.organizationIds?.includes(state.currentOrganization!.id)).length}${state.currentOrganization?.tier === 'Premium' ? '' : state.currentOrganization?.tier === 'Découverte' ? '/10' : '/5'}`, 
+                       color: 'text-slate-900 dark:text-white' 
+                     },
                      { label: 'Présences', val: state.missions.filter(m => m.organizationId === state.currentOrganization?.id).reduce((acc, m) => acc + m.participants.length, 0), color: 'text-primary-600' }
                    ].map((s, i) => (
                      <div key={i} className="bg-white dark:bg-slate-900 p-5 md:p-6 rounded-[1.5rem] shadow-sm border border-primary-50 dark:border-slate-800">
@@ -1179,23 +1370,34 @@ export default function App() {
                    </div>
                 ) : (
                   <>
-                    <div className="bg-gradient-to-br from-primary-600 to-emerald-500 dark:from-primary-700 dark:to-emerald-600 rounded-[2rem] p-6 md:p-8 text-white shadow-2xl shadow-primary-200 dark:shadow-none relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-                      <div className="relative z-10">
-                        <div className="flex items-center gap-2 mb-2 flex-wrap">
-                           {joinedOrgIds.map(oid => (
-                             <span key={oid} className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/10">
-                               {state.organizations.find(o => o.id === oid)?.name}
-                             </span>
-                           ))}
-                        </div>
-                        <h2 className="font-title text-2xl md:text-3xl font-black mb-2">Salut {state.currentUser?.firstName} !</h2>
-                        <p className="font-subtitle text-white/80 font-medium mb-6 text-base">Prêt pour tes prochaines missions ?</p>
-                        <div className="flex gap-3 max-w-xs">
-                          <div className="bg-white/20 backdrop-blur-md rounded-xl px-4 py-3 flex-1"><span className="block text-xl font-black leading-none">{registeredMissions.length}</span><span className="text-[9px] uppercase tracking-wider font-bold opacity-70">Inscrit</span></div>
-                          <div className="bg-white/20 backdrop-blur-md rounded-xl px-4 py-3 flex-1"><span className="block text-xl font-black leading-none">{joinedOrgIds.length}</span><span className="text-[9px] uppercase tracking-wider font-bold opacity-70">Assos</span></div>
+                    <div className="flex flex-col md:flex-row gap-6 items-stretch">
+                      <div className="bg-gradient-to-br from-primary-600 to-emerald-500 dark:from-primary-700 dark:to-emerald-600 rounded-[2rem] p-6 md:p-8 text-white shadow-2xl shadow-primary-200 dark:shadow-none relative overflow-hidden flex-1">
+                        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+                        <div className="relative z-10">
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                             {joinedOrgIds.map(oid => (
+                               <span key={oid} className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/10">
+                                 {state.organizations.find(o => o.id === oid)?.name}
+                               </span>
+                             ))}
+                          </div>
+                          <h2 className="font-title text-2xl md:text-3xl font-black mb-2">Salut {state.currentUser?.firstName} !</h2>
+                          <p className="font-subtitle text-white/80 font-medium mb-6 text-base">Prêt pour tes prochaines missions ?</p>
+                          <div className="flex gap-3 max-w-xs">
+                            <div className="bg-white/20 backdrop-blur-md rounded-xl px-4 py-3 flex-1"><span className="block text-xl font-black leading-none">{registeredMissions.length}</span><span className="text-[9px] uppercase tracking-wider font-bold opacity-70">Inscrit</span></div>
+                            <div className="bg-white/20 backdrop-blur-md rounded-xl px-4 py-3 flex-1"><span className="block text-xl font-black leading-none">{joinedOrgIds.length}</span><span className="text-[9px] uppercase tracking-wider font-bold opacity-70">Assos</span></div>
+                          </div>
                         </div>
                       </div>
+                      <button 
+                        onClick={handleImprevu}
+                        className="w-full md:w-auto bg-red-50 dark:bg-red-900/20 border-2 border-red-100 dark:border-red-800 p-6 rounded-[2rem] flex flex-col items-center justify-center gap-2 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all group shrink-0"
+                      >
+                        <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <AlertTriangle className="w-6 h-6 text-red-600" />
+                        </div>
+                        <span className="text-sm font-black text-red-600 uppercase tracking-widest">J'ai un imprévu</span>
+                      </button>
                     </div>
 
                     <section className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[2rem] shadow-sm border border-primary-50 dark:border-slate-800 animate-in fade-in duration-300">
@@ -1354,8 +1556,12 @@ export default function App() {
                     {joinedOrgs.map(org => (
                       <div key={org.id} className="group bg-white dark:bg-slate-900 rounded-[2rem] p-6 border-2 border-primary-500/30 shadow-sm transition-all hover:shadow-xl relative">
                         <div className="flex justify-between items-start mb-6">
-                           <div className="w-14 h-14 rounded-2xl bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary-200 dark:shadow-none">
-                              <Building className="w-7 h-7" />
+                           <div className="w-14 h-14 rounded-2xl bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary-200 dark:shadow-none overflow-hidden">
+                              {org.avatar ? (
+                                <img src={org.avatar} alt={org.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <Building className="w-7 h-7" />
+                              )}
                            </div>
                            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-widest">
                              <Check className="w-3 h-3" /> Membre
@@ -1390,14 +1596,27 @@ export default function App() {
                     {availableOrgs.map(org => (
                       <div key={org.id} className="group bg-white dark:bg-slate-900 rounded-[2rem] p-6 border-2 border-primary-50 dark:border-slate-800 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
                         <div className="flex justify-between items-start mb-6">
-                           <div className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-slate-800 text-slate-400 group-hover:bg-primary-100 group-hover:text-primary-600 transition-colors flex items-center justify-center">
-                              <Building className="w-7 h-7" />
+                           <div className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-slate-800 text-slate-400 group-hover:bg-primary-100 group-hover:text-primary-600 transition-colors flex items-center justify-center overflow-hidden">
+                              {org.avatar ? (
+                                <img src={org.avatar} alt={org.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <Building className="w-7 h-7" />
+                              )}
                            </div>
                         </div>
                         <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">{org.name}</h3>
-                        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-8">CODE: {org.code}</p>
-                        <Button fullWidth onClick={() => handleJoinOrganization(org.id)}>
-                          Rejoindre
+                        <div className="flex items-center justify-between mb-8">
+                          <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">CODE: {org.code}</p>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                            {state.users.filter(u => u.role === 'volunteer' && u.organizationIds?.includes(org.id)).length} / {org.tier === 'Premium' ? '∞' : org.tier === 'Découverte' ? '10' : '5'}
+                          </span>
+                        </div>
+                        <Button 
+                          fullWidth 
+                          onClick={() => handleJoinOrganization(org.id)}
+                          disabled={state.users.filter(u => u.role === 'volunteer' && u.organizationIds?.includes(org.id)).length >= (org.tier === 'Premium' ? Infinity : org.tier === 'Découverte' ? 10 : 5)}
+                        >
+                          {state.users.filter(u => u.role === 'volunteer' && u.organizationIds?.includes(org.id)).length >= (org.tier === 'Premium' ? Infinity : org.tier === 'Découverte' ? 10 : 5) ? 'Complet' : 'Rejoindre'}
                         </Button>
                       </div>
                     ))}
@@ -1581,6 +1800,48 @@ export default function App() {
                   <span className="text-4xl font-black tracking-[0.2em] text-slate-900 dark:text-white font-mono">{state.currentOrganization?.code}</span>
               </div>
           </div>
+      </Modal>
+
+      <Modal isOpen={isOrgNameModalOpen} onClose={() => setIsOrgNameModalOpen(false)} title="Modifier l'association">
+          <form onSubmit={handleUpdateOrgProfile} className="space-y-6">
+              <div className="flex flex-col items-center py-4">
+                  <div className="relative group mb-6">
+                      <div className="w-24 h-24 bg-primary-50 dark:bg-primary-900/30 rounded-[2rem] flex items-center justify-center overflow-hidden border-4 border-primary-50 shadow-lg">
+                          {newOrgAvatar ? (
+                            <img src={newOrgAvatar} alt="Logo Preview" className="w-full h-full object-cover" />
+                          ) : (
+                            <Building className="w-10 h-10 text-primary-600" />
+                          )}
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => orgLogoInputRef.current?.click()}
+                        className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Camera className="w-8 h-8 text-white" />
+                      </button>
+                      <input 
+                        type="file" 
+                        ref={orgLogoInputRef} 
+                        onChange={handleOrgLogoSelect} 
+                        className="hidden" 
+                        accept="image/*"
+                      />
+                  </div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-6">Modifiez l'identité visuelle de votre association.</p>
+              </div>
+              <Input 
+                label="Nom de l'association" 
+                value={newOrgName} 
+                onChange={e => setNewOrgName(e.target.value)} 
+                required 
+                placeholder="Ex: Les Restos du Cœur"
+              />
+              <div className="flex flex-col gap-2 pt-4">
+                  <Button type="submit" fullWidth size="lg">Enregistrer les modifications</Button>
+                  <Button type="button" variant="ghost" fullWidth onClick={() => setIsOrgNameModalOpen(false)}>Annuler</Button>
+              </div>
+          </form>
       </Modal>
 
       <Modal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} title="Bye bye ?">

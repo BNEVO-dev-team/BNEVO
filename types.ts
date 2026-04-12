@@ -51,6 +51,18 @@ export interface Organization {
   name: string;
   code: string;
   tier: OrganizationTier;
+  avatar?: string;
+}
+
+export interface LateCancellationAlert {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  missionId: string;
+  missionTitle: string;
+  organizationId: string;
+  timestamp: number;
 }
 
 export interface AppState {
@@ -61,4 +73,5 @@ export interface AppState {
   missions: Mission[];
   users: User[]; // Mock database of users
   organizations: Organization[]; // Liste de toutes les orgs disponibles (mock DB)
+  alerts: LateCancellationAlert[];
 }
