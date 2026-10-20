@@ -1,0 +1,12 @@
+flowchart TD
+    A([Début : Un organisateur d'une association veux créer une mission]) --> B{Est ce que l'organisateur dispose d'une association?}
+    B -- Oui --> E
+    B -- Non --> C[Création d'une association]
+    C --> E[Création d'une mission]
+    E --> F[Fixer les objectifs de la mission]
+    F --> G{Notifie-t-on les bénévoles de la nouvelle mission?}
+    G -- Oui --> H[Envoi de la notification + magic link]
+    H --> I([Fin: Mission crée avec notification])
+    G -- Non --> J([Fin: Mission crée sans notification])
+    
+    

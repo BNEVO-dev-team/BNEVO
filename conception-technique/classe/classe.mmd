@@ -1,0 +1,125 @@
+classDiagram
+    class Association {
+        +String id
+        +String name
+        +Int maxVolunteers = 15
+        +Boolean isPremium()
+        +checkVolunteerLimit()
+        +notifyUnregisteredMembers()
+        +generateMagicLink()
+    }
+
+    class User {
+        +String id
+        +String name
+        +String email
+        +String userType
+        +String profileImagePath
+    }
+
+    class Organizer {
+        +String organizerId
+        +createMission()
+        +upgradeToPremium()
+        +banVolunteer(String id)
+        +receiveAlert(String message)
+    }
+
+    class Volunteer {
+        +String volunteerId
+        +List~String~ interests
+        +Boolean isBanned
+        +register()
+        +receiveNotification(String message)
+        +withdraw()
+    }
+
+    User "1" -- "0..*" Organizer
+    User "1" -- "0..*" Volunteer
+
+    Association "1" -- "1..*" Organizer : employs / manages
+    Association "1" -- "0..*" Mission : organizes
+    Association "0..*" -- "0..*" Volunteer : member of / registered
+
+    class Mission {
+        +String id
+        +String title
+        +DateTime startDate
+        +DateTime endDate
+        +String missionRole
+        +Datetime missionStart
+        +Datetime missionEnd
+        +String currentStatus
+        +Integer minParticipants
+        +Integer maxParticipants
+        +handleWithdrawal(Volunteer v)
+    }
+
+    class VolunteerToMission {
+        +String volunteerId
+        +String missionId
+    }
+
+    Mission "1..*" -- "1..*" VolunteerToMission
+    Volunteer "1..*" -- "1..*" VolunteerToMission
+
+    class StatusUpdate {
+        +String missionId
+        +String statusTypeId
+        +Datetime update
+    }
+
+    class StatusType {
+        +String id
+        +String status
+    }
+
+    StatusUpdate "1..*" -- "1" StatusType
+    Mission "1..*" -- "1..*" StatusUpdate
+
+    class MissionObjectives {
+        +String id
+        +String missionId
+        +String description
+        +Boolean isFinished
+        +String registeredUserId
+    }
+
+    Mission "1" -- "1..*" MissionObjectives
+
+    class VolunteerToMissionObjectives {
+        +String volunteerId
+        +String missionObjectivesId
+    }
+
+    Volunteer "1..*" -- "1..*" VolunteerToMissionObjectives
+    MissionObjectives "1..*" -- "1..*" VolunteerToMissionObjectives
+
+    class ChatMessage {
+        +String id
+        +String userId
+        +String content
+        +DateTime timestamp
+        +send()
+    }
+
+    Mission "1" -- "0..*" ChatMessage : hosts
+    User "1" -- "0..*" ChatMessage : publishes
+
+    class Leaflet {
+        +String id
+        +String title
+        +String description
+    }
+
+    Mission "1" -- "0..*" Leaflet : integrates
+
+    class GeolocatedObjective {
+        +String id
+        +String name
+        +Float latitude
+        +Float longitude
+        +String details
+    }
+
+    Leaflet "1" -- "1..*" GeolocatedObjective : references
