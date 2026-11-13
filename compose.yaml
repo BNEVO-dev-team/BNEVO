@@ -1,0 +1,65 @@
+# Environnement de développement Bénévo
+#   docker compose up -d --build
+# API Symfony + hub Mercure : https://localhost  (https://localhost/.well-known/mercure)
+# Frontend React           : http://localhost:5173
+
+services:
+  php:
+    build:
+      context: ./backend
+      target: frankenphp_dev
+    restart: unless-stopped
+    environment:
+      SERVER_NAME: ${SERVER_NAME:-localhost}, php:80
+      APP_ENV: ${APP_ENV:-dev}
+      DEFAULT_URI: https://${SERVER_NAME:-localhost}
+      # Rechargement automatique du worker PHP et du navigateur quand le code change
+      FRANKENPHP_WORKER_CONFIG: watch
+      FRANKENPHP_SITE_CONFIG: hot_reload
+      XDEBUG_MODE: ${XDEBUG_MODE:-off}
+      # --- Mercure (hub intégré à FrankenPHP) ---
+      MERCURE_TRUSTED_ISSUERS: ${MERCURE_JWT_ISSUER:-https://localhost}
+      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_EXTRA_DIRECTIVES: playground
+      # Utilisé par Symfony (MercureBundle) pour publier
+      MERCURE_URL: http://php/.well-known/mercure
+      MERCURE_PUBLIC_URL: https://${SERVER_NAME:-localhost}/.well-known/mercure
+      MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_JWT_ISSUER: ${MERCURE_JWT_ISSUER:-https://localhost}
+    volumes:
+      - ./backend:/app
+      - ./backend/frankenphp/Caddyfile:/etc/frankenphp/Caddyfile:ro
+      - ./backend/frankenphp/conf.d/20-app.dev.ini:/usr/local/etc/php/app.conf.d/20-app.dev.ini:ro
+      # var/ (cache, logs) reste dans le conteneur : plus rapide sous Windows/Mac
+      - /app/var
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    tty: true
+
+  frontend:
+    image: node:24-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      # Le proxy Vite joint l'API par le réseau Docker
+      API_TARGET: http://php
+      IN_DOCKER: "1"
+    volumes:
+      - ./frontend:/app
+      # node_modules propre au conteneur (Linux), distinct de celui de l'hôte
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - php
+
+volumes:
+  caddy_data:
+  caddy_config:
